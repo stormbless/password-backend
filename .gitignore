@@ -218,3 +218,4 @@ vault/policies
 vault/tmp
 
 
+local-secure-storage.db.json
