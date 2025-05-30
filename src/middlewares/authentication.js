@@ -2,9 +2,10 @@ const jwt = require('jsonwebtoken');
 
 async function authenticationMiddleware(req, res, next) {
   console.log("received request");
-  // console.log(JSON.stringify(req.body));
+  console.log(JSON.stringify(req.body));
   try {
     const sessionToken = req.headers.authorization;
+
 
     const { dat } = jwt.verify(
       sessionToken,

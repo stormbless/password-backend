@@ -10,7 +10,7 @@ const app = express();
 
 // possibly restrict to https://gro3demo.monday.com
 const corsOptions = {
-  origin: ['http://monday.com'],
+  origin: ['http://monday.com', 'https://v9c32bc575630bb9f.cdn2.monday.app'],
   method: 'GET, POST'
 };
 if (process.env.NODE_ENV === "test") {
