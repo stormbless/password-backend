@@ -1,11 +1,12 @@
-require('dotenv').config();
-// const jwt = require('jsonwebtoken');
+const { EnvironmentVariablesManager } = require('@mondaycom/apps-sdk');
+
+let envManager = new EnvironmentVariablesManager();// const jwt = require('jsonwebtoken');
 const express = require('express');
 const bodyParser = require('body-parser');
 const routes = require('./routes');
 const cors = require('cors');
 
-const { PORT: port } = process.env;
+const port = envManager.get("PORT");
 const app = express();
 
 // possibly restrict to https://gro3demo.monday.com
@@ -13,9 +14,9 @@ const corsOptions = {
   origin: ['http://monday.com', 'https://v9c32bc575630bb9f.cdn2.monday.app'],
   method: 'GET, POST'
 };
-if (process.env.NODE_ENV === "test") {
-  corsOptions.origin.push('http://localhost:8301');
-}
+// if (process.env.NODE_ENV === "test") {
+//   corsOptions.origin.push('http://localhost:8301');
+// }
 
 // const token = jwt.sign({
 //   dat: {

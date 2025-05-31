@@ -1,3 +1,6 @@
+const { SecretsManager } = require('@mondaycom/apps-sdk');
+const secretsManager = new SecretsManager();
+
 const jwt = require('jsonwebtoken');
 
 async function authenticationMiddleware(req, res, next) {
@@ -9,7 +12,7 @@ async function authenticationMiddleware(req, res, next) {
 
     const { dat } = jwt.verify(
       sessionToken,
-      process.env.CLIENT_SECRET
+      secretsManager.get("CLIENT_SECRET")
     );
 
     // console.log(`dat: ${JSON.stringify(dat)}`);
