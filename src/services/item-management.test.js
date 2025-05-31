@@ -1,39 +1,39 @@
 const { SecureStorage } = require('@mondaycom/apps-sdk');
-const storageService = require('./storage-service');
+const itemManagement = require('./item-management');
 
 const secureStorage = new SecureStorage();
 
-const { exportedForTesting } = storageService;
+const { exportedForTesting } = itemManagement;
 
-// initialize testing functions
+// initialize functions being tested
 const { 
   getPasswordKey,
   getChangeHistoryKey,
-  getIndexKey,
-  getIndex,
   deletePassword,
   deleteChangeHistory,
-  deleteItem,
-  deleteIndex,
-  updateIndex 
 } = exportedForTesting;
 
 const {
-  deleteAccountValues,
   storePassword,
   getPassword,
   getChangeHistory,
   updateChangeHistory,
-} = storageService;
+  deleteItem
+} = itemManagement;
 
 // test data
-const testData = require('./storage-service.test-data');
+const testData = require('./management.test-data');
 const { account1Data } = testData;
 const { account2Data } = testData;
 
 const testAccountId = "27658948";
 const testUser = {id: "81146743", name: "Johnny Black"};
 const testItemId = "4003520369";
+
+const passwordKey = account1Data[1].key;
+const setUpPasswordValue = account1Data[1].value;
+
+const changeHistory = account1Data[4];
 
 // setup and teardown functions
 
@@ -100,14 +100,14 @@ function expectChangeHistoryUpdated(oldChangeHistory, newChangeHistory,
 }
 
 async function testUpdateChangeHistory() {
-  let changeHistoryBefore = await secureStorage.get(account1Data[4].key);
+  let changeHistoryBefore = await secureStorage.get(changeHistory.key);
   if (!changeHistoryBefore) {changeHistoryBefore = [];}
   const timeBefore = Date.now();
   
   const successful = await updateChangeHistory(testAccountId, testItemId, testUser);
   
   const timeAfter = Date.now();
-  const changeHistoryAfter = await secureStorage.get(account1Data[4].key);
+  const changeHistoryAfter = await secureStorage.get(changeHistory.key);
 
   expectChangeHistoryUpdated(changeHistoryBefore, changeHistoryAfter, testUser, timeBefore, timeAfter);
   expect(successful).toBe(true);
@@ -139,57 +139,31 @@ describe('Account 1 NOT SETUP', () => {
     expect(getChangeHistoryKey(testAccountId, testItemId)).toBe("account.27658948.item.4003520369.changeHistory");
   });
 
-  test('getIndexKey', () => {
-    expect(getIndexKey(testAccountId)).toBe("account.27658948.index");
-  });
-
-  test('getIndex when index not set', async () => {
-    const index = await getIndex(testAccountId);
-    expect(index).toEqual({ itemIds: [] });
-  });
-
-  test('updateIndex when index value not set', async () => {
-    const indexBefore = await secureStorage.get(account1Data[0].key);
-
-    expect(indexBefore).toBeNull();
-    
-    const successful = await updateIndex(testAccountId, testItemId);
-    const indexAfter = await secureStorage.get(account1Data[0].key);
-
-    expect(successful).toBe(true);
-    expect(indexAfter).toEqual({itemIds: [testItemId]});
-  });
-
-  test('getPassword when password value not set', async () => {    
+  test('getPassword', async () => {    
     const password = await getPassword(testAccountId, testItemId);
 
     expect(password).toBe("");
   });
 
-  test('storePassword when password value not set', async () => {    
-    const passwordBefore = await secureStorage.get(account1Data[1].key);
+  test('storePassword', async () => {    
+    const passwordBefore = await secureStorage.get(passwordKey);
     expect(passwordBefore).toBeNull();
     
-    const successful = await storePassword(testAccountId, testItemId, account1Data[1].value);
-    const passwordAfter = await secureStorage.get(account1Data[1].key);
+    const successful = await storePassword(testAccountId, testItemId, setUpPasswordValue);
+    const passwordAfter = await secureStorage.get(passwordKey);
 
     expect(successful).toBe(true);
-    expect(passwordAfter).toEqual(account1Data[1].value);
+    expect(passwordAfter).toEqual(setUpPasswordValue);
   });
 
-  test('getChangeHistory when changeHistory value not set', async () => {    
+  test('getChangeHistory', async () => {    
     const changeHistory = await getChangeHistory(testAccountId, testItemId);
 
     expect(changeHistory).toEqual([]);
   });
 
-  test('updateChangeHistory when changeHistory value not set', async () => {    
+  test('updateChangeHistory', async () => {    
     await testUpdateChangeHistory();
-  });
-
-  test('deleteAccountValues when account values not set', async () => {
-    const successful = await deleteAccountValues(testAccountId);
-    expect(successful).toBe(true);
   });
 })
 
@@ -207,88 +181,60 @@ describe('Account 1 SETUP', () => {
   afterEach(async() => {
     await tearDownAccount1();
   });
-
-  test('getIndex when index set', async () => {
-    const index = await getIndex(testAccountId);
-    expect(index).toEqual(account1Data[0].value);
-  });
-
   
-  test('deletePassword when password value set', async () => {
-    const passwordBefore = await secureStorage.get(account1Data[1].key);
+  test('deletePassword', async () => {
+    const passwordBefore = await secureStorage.get(passwordKey);
 
-    expect(passwordBefore).toEqual(account1Data[1].value);
+    expect(passwordBefore).toEqual(setUpPasswordValue);
     
     const successful = await deletePassword(testAccountId, testItemId);
-    const passwordAfter = await secureStorage.get(account1Data[1].key);
-
+    
     expect(successful).toBe(true);
-    expect(passwordAfter).toBeNull();
+    expectEmpty([{key: passwordKey}])
   });
 
-  test('deleteChangeHistory when changeHistory value set', async () => {
-    const changeHistoryBefore = await secureStorage.get(account1Data[4].key);
+  test('deleteChangeHistory', async () => {
+    const changeHistoryBefore = await secureStorage.get(changeHistory.key);
 
-    expect(changeHistoryBefore).toEqual(account1Data[4].value);
+    expect(changeHistoryBefore).toEqual(changeHistory.value);
     
     const successful = await deleteChangeHistory(testAccountId, testItemId);
-    const changeHistoryAfter = await secureStorage.get(account1Data[4].key);
+    const changeHistoryAfter = await secureStorage.get(changeHistory.key);
 
     expect(successful).toBe(true);
     expect(changeHistoryAfter).toBeNull();
   });
 
-  test('deleteItem when password and changeHistory value set', async () => {
-    const passwordBefore = await secureStorage.get(account1Data[1].key);
-    const changeHistoryBefore = await secureStorage.get(account1Data[4].key);
+  test('deleteItem', async () => {
+    const passwordBefore = await secureStorage.get(passwordKey);
+    const changeHistoryBefore = await secureStorage.get(changeHistory.key);
 
-    expect(passwordBefore).toEqual(account1Data[1].value);
-    expect(changeHistoryBefore).toEqual(account1Data[4].value);
+    expect(passwordBefore).toEqual(setUpPasswordValue);
+    expect(changeHistoryBefore).toEqual(changeHistory.value);
 
     const successful = await deleteItem(testAccountId, testItemId);
-    const passwordAfter = await secureStorage.get(account1Data[1].key);
-    const changeHistoryAfter = await secureStorage.get(account1Data[4].key);
+    const passwordAfter = await secureStorage.get(passwordKey);
+    const changeHistoryAfter = await secureStorage.get(changeHistory.key);
 
     expect(successful).toBe(true);
     expect(passwordAfter).toBeNull();
     expect(changeHistoryAfter).toBeNull();
   });
 
-  test('deleteIndex when index value set', async () => {
-    const indexBefore = await secureStorage.get(account1Data[0].key);
-
-    expect(indexBefore).toEqual(account1Data[0].value);
-    
-    const successful = await deleteIndex(testAccountId);
-    const indexAfter = await secureStorage.get(account1Data[0].key);
-
-    expect(successful).toBe(true);
-    expect(indexAfter).toBeNull();
-  });
-
-  test('getPassword when password value set', async () => {    
+  test('getPassword', async () => {    
     const password = await getPassword(testAccountId, testItemId);
 
-    expect(password).toBe(account1Data[1].value);
+    expect(password).toBe(setUpPasswordValue);
   });
 
-  test('getChangeHistory when changeHistory value set', async () => {    
-    const changeHistory = await getChangeHistory(testAccountId, testItemId);
+  test('getChangeHistory', async () => {    
+    const gottenChangeHistory = await getChangeHistory(testAccountId, testItemId);
 
-    expect(changeHistory).toEqual(account1Data[4].value);
+    expect(gottenChangeHistory).toEqual(changeHistory.value);
   });
 
-  test('updateChangeHistory when changeHistory value set', async () => {    
+  test('updateChangeHistory', async () => {    
     await testUpdateChangeHistory();
-  });
-  
-  test('deleteAccountValues when account values set', async () => {  
-    await expectUnchanged(account1Data);
-  
-    const successful = await deleteAccountValues(testAccountId);
-    
-    expect(successful).toBe(true);
-    await expectEmpty(account1Data);
   });
 
 });
