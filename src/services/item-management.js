@@ -48,7 +48,6 @@ const getPassword = async (accountId, itemId) => {
   if (!password) {
     password = "";
   }
-  console.log(password);
   return password;
 }
 
@@ -103,6 +102,6 @@ const exportedForTesting = {
   deleteChangeHistory,
 };
 
-if (process.env.NODE_ENV === "test") {
-  module.exports.exportedForTesting = exportedForTesting;
-}
+// if (process.env.NODE_ENV === "test") {
+//   module.exports.exportedForTesting = exportedForTesting;
+// }
