@@ -16,14 +16,14 @@ function getChangeHistoryKey(accountId, itemId) {
 async function deletePassword(accountId, itemId) {
   const key = getPasswordKey(accountId, itemId);
 
-  deleteSuccessful = await secureStorage.delete(key);
+  const deleteSuccessful = await secureStorage.delete(key);
   return deleteSuccessful;
 }
 
 async function deleteChangeHistory(accountId, itemId) {
   const key = getChangeHistoryKey(accountId, itemId);
 
-  deleteSuccessful = await secureStorage.delete(key);
+  const deleteSuccessful = await secureStorage.delete(key);
 
   return deleteSuccessful;
 }
@@ -70,17 +70,19 @@ const updateChangeHistory = async (accountId, itemId, user) => {
   const datetimeChanged = Date.now();
   
   const newChangeHistory = [ {datetimeChanged, user}, ...prevChangeHistory ];
+  console.log(`changeHistory.length: ${newChangeHistory.length}`);
   
   const updateSuccessful = await secureStorage.set(key, newChangeHistory);
+  console.log(`updateSuccessful:: ${updateSuccessful}`);
   
   return updateSuccessful;
 }
 
 const deleteItem = async (accountId, itemId) => {
-  passSuccessful = await deletePassword(accountId, itemId);
-  histSuccessful = await deleteChangeHistory(accountId, itemId);
+  const passSuccessful = await deletePassword(accountId, itemId);
+  const histSuccessful = await deleteChangeHistory(accountId, itemId);
 
-  deleteSuccessful = (passSuccessful && histSuccessful);
+  const deleteSuccessful = (passSuccessful && histSuccessful);
 
   return deleteSuccessful;
 }

@@ -22,7 +22,7 @@ const account1Data = [
   ]},
 ];
 
-account2Id = "47658948";
+const account2Id = "47658948";
 const account2Data = [
   {key: `account.${account2Id}.index`, value: { itemIds: ["4003520369", "4003329369", "6003329369"] } },
   {key: `account.${account2Id}.item.4003520369.password`, value: "1password" },
