@@ -219,3 +219,5 @@ vault/tmp
 
 
 local-secure-storage.db.json
+
+.env
