@@ -1,7 +1,10 @@
 const router = require('express').Router();
-const mondayRoutes = require('./monday');
+const itemRoutes = require('./item');
+const accountRoutes = require('./account');
 
-router.use(mondayRoutes);
+
+router.use(itemRoutes);
+router.use(accountRoutes);
 
 router.get('/', function (req, res) {
   res.json(getHealth());
