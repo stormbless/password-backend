@@ -4,9 +4,13 @@ const { SecureStorage } = require('@mondaycom/apps-sdk');
 
 const secureStorage = new SecureStorage();
 
+const bcrypt = require('bcrypt');
+
 
 // initialize controller functions
 const { 
+  storeCode,
+  verifyCode,
   deleteAccountValues
 } = accountController;
 
@@ -18,8 +22,13 @@ const { account2Data } = testData;
 
 const { account1Id } = testData;
 const { testUser } = testData;
+const { testValidCode } = testData;
+const { testInvalidCode } = testData;
+
 
 const sessionUser = {accountId: account1Id, userId: testUser.id};
+
+const setUpCode = account1Data[7];
 
 // setup and teardown functions
 
@@ -98,6 +107,46 @@ describe('Account 1 NOT SETUP', () => {
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.send).toHaveBeenCalled();
   });
+
+  test('storeCode', async () => {
+    const req = {
+      session: sessionUser,
+      body: {
+        code: testValidCode,
+      }
+    };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      send: jest.fn()
+    };
+
+    await storeCode(req, res);
+
+    const codeHashAfter = await secureStorage.get(setUpCode.key);
+    const codeStored = await bcrypt.compare(testValidCode, codeHashAfter);
+
+    expect(codeStored).toBe(true);
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalled();
+  });
+
+  test('verifyCode when code not set', async () => {
+    const req = {
+      session: sessionUser,
+      body: {
+        code: testValidCode
+      }
+    };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      send: jest.fn()
+    };
+
+    await verifyCode(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.send).toHaveBeenCalled();
+  });
 })
 
 
@@ -130,6 +179,54 @@ describe('Account 1 SETUP', () => {
     
     await expectEmpty(account1Data);
     expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalled();
+  });
+
+  test('verifyCode when correct code sent', async () => {
+    // testCode is plaintext, convert to hash
+    const salt = await bcrypt.genSalt();
+    const codeHashValue = await bcrypt.hash(setUpCode.value, salt);
+    await secureStorage.set(setUpCode.key, codeHashValue);
+    
+    const req = {
+      session: sessionUser,
+      body: {
+        code: testValidCode
+      }
+    };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      send: jest.fn()
+    };
+
+    await verifyCode(req, res);
+
+    // nothing to delete, just test success status
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalled();
+  });
+
+  test('verifyCode when incorrect code sent', async () => {
+    // testCode is plaintext, convert to hash
+    const salt = await bcrypt.genSalt();
+    const codeHashValue = await bcrypt.hash(setUpCode.value, salt);
+    await secureStorage.set(setUpCode.key, codeHashValue);
+    
+    const req = {
+      session: sessionUser,
+      body: {
+        code: testInvalidCode
+      }
+    };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      send: jest.fn()
+    };
+
+    await verifyCode(req, res);
+
+    // nothing to delete, just test success status
+    expect(res.status).toHaveBeenCalledWith(500);
     expect(res.send).toHaveBeenCalled();
   });
 

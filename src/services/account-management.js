@@ -4,10 +4,17 @@ const secureStorage = new SecureStorage();
 
 const itemManagement = require('./item-management.js');
 
+const bcrypt = require('bcrypt');
+
+
 // ..............................PRIVATE METHODS................................
 
 function getIndexKey(accountId) {
   return `account.${accountId}.index`;
+}
+
+function getCodeKey(accountId) {
+  return `account.${accountId}.code`;
 }
 
 // returns account index of itemIds
@@ -22,6 +29,27 @@ async function getIndex(accountId) {
   return index;
 }
 
+async function deleteItems(accountId, itemIds) {
+  let deleteSuccessful = true;
+
+  for (let itemId of itemIds) {
+    let itemSuccessful = await itemManagement.deleteItem(accountId, itemId);
+    if (!itemSuccessful) {
+      deleteSuccessful = false;
+    }
+  };
+
+  return deleteSuccessful;
+}
+
+async function deleteCode(accountId) {
+  const key = getCodeKey(accountId);
+
+  const deleteSuccessful = await secureStorage.delete(key);
+
+  return deleteSuccessful;
+}
+
 async function deleteIndex(accountId) {
   const key = getIndexKey(accountId);
 
@@ -29,6 +57,8 @@ async function deleteIndex(accountId) {
 
   return deleteSuccessful;
 }
+
+
 
 // ..............................PUBLIC METHODS................................
 
@@ -49,26 +79,52 @@ const updateIndex = async (accountId, itemId) => {
   return updateSuccessful;
 }
 
+const storeCode = async (accountId, code) => {
+  const key = getCodeKey(accountId);
+
+  const salt = await bcrypt.genSalt();
+  const codeHash = await bcrypt.hash(code, salt);
+
+  const successful = await secureStorage.set(key, codeHash);
+
+  return successful;
+}
+
+const verifyCode = async (accountId, code) => {
+  const key = getCodeKey(accountId);
+  console.log(`key: ${key}`);
+  console.log(`accountId: ${accountId}`);
+  console.log(`code: ${code}`);
+
+  const codeHash = await secureStorage.get(key);
+  console.log(`codeHash: ${codeHash}`);
+
+  // return early if account's password access code not yet set
+  if (!codeHash) {return false;}
+
+  verified = await bcrypt.compare(code, codeHash); 
+  console.log(`verified: ${verified}`);
+
+  return verified;
+}
+
 // deletes all account values using account index, should do on app uninstall
 const deleteAccountValues = async (accountId) => {
   const index = await getIndex(accountId);
 
-  let itemsSuccessful = true;
+  const itemsSuccessful = await deleteItems(accountId, index.itemIds);
+  const codeSuccessful = await deleteCode(accountId);
+  const indexSuccessful = await deleteIndex(accountId);
 
-  for (let itemId of index.itemIds) {
-    let itemSuccessful = await itemManagement.deleteItem(accountId, itemId);
-    if (!itemSuccessful) {
-      itemsSuccessful = false;
-    }
-  };
+  const deleteSuccessful = (itemsSuccessful && codeSuccessful && indexSuccessful);
 
-  const indexSuccessful = deleteIndex(accountId);
-
-  return (indexSuccessful && itemsSuccessful);
+  return deleteSuccessful;
 }
 
 module.exports = {
   updateIndex,
+  storeCode,
+  verifyCode,
   deleteAccountValues
 }
 

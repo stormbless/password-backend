@@ -1,8 +1,11 @@
+
 // test data for monday-controller.test
 const account1Id = "37658948";
 const testUser = {id: "81146743", name: "Johnny Black"};
 const testPassword = "password";
 const testItemId = "4003520369";
+const testValidCode = "123456789";
+const testInvalidCode = "987654321";
 const account1Data = [
   {key: `account.${account1Id}.index`, value: { itemIds: [testItemId, "4003329369", "6003329369"] } },
   {key: `account.${account1Id}.item.${testItemId}.password`, value: "1password" },
@@ -23,6 +26,7 @@ const account1Data = [
     { datetimeChanged: 1738342585186, user: {id: testUser.id, name: "Jaime Smith"} },
     { datetimeChanged: 1738242585186, user: {id: testUser.id, name: "Hannah Zora"} }
   ]},
+  {key: `account.${account1Id}.code`, value: testValidCode},
 ];
 
 const account2Id = "57658948";
@@ -54,5 +58,7 @@ module.exports = {
   testPassword,
   testUser,
   account1Data,
-  account2Data
+  account2Data,
+  testValidCode,
+  testInvalidCode,
 };
