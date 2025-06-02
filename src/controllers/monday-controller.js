@@ -1,6 +1,12 @@
+
+
 const itemManagement = require('../services/item-management');
 const accountManagement = require('../services/account-management');
 
+// function sleep(ms) {
+//   return new Promise(resolve => setTimeout(resolve, ms));
+// }
+// await sleep(msec)
 
 async function storePassword(req, res) {
   try {
@@ -9,9 +15,9 @@ async function storePassword(req, res) {
 
     const user = {id: userId, name: changedBy};
 
-    passSuccess = await itemManagement.storePassword(accountId, itemId, password);
-    histSuccess = await itemManagement.updateChangeHistory(accountId, itemId, user);
-    indexSuccess = await accountManagement.updateIndex(itemId);
+    const passSuccess = await itemManagement.storePassword(accountId, itemId, password);
+    const histSuccess = await itemManagement.updateChangeHistory(accountId, itemId, user);
+    const indexSuccess = await accountManagement.updateIndex(itemId);
 
     if (passSuccess && histSuccess && indexSuccess) {
       return res.status(200).send();
@@ -29,7 +35,7 @@ async function getPassword(req, res) {
     const { accountId } = req.session;
     const { itemId } = req.query;
 
-    password = await itemManagement.getPassword(accountId, itemId);
+    const password = await itemManagement.getPassword(accountId, itemId);
 
     return res.status(200).send(password);
   } catch (err) {
@@ -43,7 +49,7 @@ async function getChangeHistory(req, res) {
     const { accountId } = req.session;
     const { itemId } = req.query;
 
-    changeHistory = await itemManagement.getChangeHistory(accountId, itemId);
+    const changeHistory = await itemManagement.getChangeHistory(accountId, itemId);
 
     return res.status(200).send(changeHistory);
   } catch (err) {
@@ -60,7 +66,7 @@ async function deleteAccountValues(req, res) {
     // might do another auth middleware that verifies admin that goes after first auth before this
     // might automate to work automatically on uninstall
 
-    deleteSuccessful = await accountManagement.deleteAccountValues(accountId);
+    const deleteSuccessful = await accountManagement.deleteAccountValues(accountId);
 
     if (deleteSuccessful) {
       return res.status(200).send();

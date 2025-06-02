@@ -13,7 +13,7 @@ function getIndexKey(accountId) {
 // returns account index of itemIds
 async function getIndex(accountId) {
   const key = getIndexKey(accountId);
-  index = await secureStorage.get(key);
+  let index = await secureStorage.get(key);
 
   if (!index) {
     index = { itemIds: [] };
@@ -25,7 +25,7 @@ async function getIndex(accountId) {
 async function deleteIndex(accountId) {
   const key = getIndexKey(accountId);
 
-  deleteSuccessful = await secureStorage.delete(key);
+  const deleteSuccessful = await secureStorage.delete(key);
 
   return deleteSuccessful;
 }
@@ -80,6 +80,6 @@ const exportedForTesting = {
   deleteIndex,
 };
 
-if (process.env.NODE_ENV === "test") {
-  module.exports.exportedForTesting = exportedForTesting;
-}
+// if (process.env.NODE_ENV === "test") {
+//   module.exports.exportedForTesting = exportedForTesting;
+// }
