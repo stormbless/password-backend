@@ -6,9 +6,6 @@ router.post('/api/store-password', authenticationMiddleware, itemController.stor
 router.get('/api/get-password', authenticationMiddleware, itemController.getPassword);
 router.get('/api/get-change-history', authenticationMiddleware, itemController.getChangeHistory);
 
-router.post('/api/delete-account-values', authenticationMiddleware, accountController.deleteAccountValues);
-
-
 
 
 module.exports = router;
