@@ -25,7 +25,6 @@ async function verifyCode(req, res) {
     const { accountId } = req.session;
     const { code } = req.body;
 
-    console.log(`accountId: ${accountId}, code: ${code}`);
     const verified = await accountManagement.verifyCode(accountId, code);
 
     if (verified) {
@@ -42,10 +41,6 @@ async function verifyCode(req, res) {
 async function deleteAccountValues(req, res) {
   try {
     const { accountId } = req.session;
-
-    // might have to verify user is an admin or something like that
-    // might do another auth middleware that verifies admin that goes after first auth before this
-    // might automate to work automatically on uninstall
 
     const deleteSuccessful = await accountManagement.deleteAccountValues(accountId);
 

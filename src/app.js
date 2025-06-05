@@ -11,7 +11,10 @@ const app = express();
 
 // possibly restrict to https://gro3demo.monday.com
 const corsOptions = {
-  origin: ['https://v9c32bc575630bb9f.cdn2.monday.app'],
+  origin: [
+    'https://vbd2f1a6673a77bd8.cdn2.monday.app', // item view 
+    'https://23f4f27adb43e5ad.cdn2.monday.app', // account settings view
+  ],
   method: 'GET, POST'
 };
 // if (process.env.NODE_ENV === "test") {

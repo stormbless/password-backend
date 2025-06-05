@@ -17,6 +17,7 @@ async function deletePassword(accountId, itemId) {
   const key = getPasswordKey(accountId, itemId);
 
   const deleteSuccessful = await secureStorage.delete(key);
+
   return deleteSuccessful;
 }
 
@@ -70,10 +71,8 @@ const updateChangeHistory = async (accountId, itemId, user) => {
   const datetimeChanged = Date.now();
   
   const newChangeHistory = [ {datetimeChanged, user}, ...prevChangeHistory ];
-  console.log(`changeHistory.length: ${newChangeHistory.length}`);
   
   const updateSuccessful = await secureStorage.set(key, newChangeHistory);
-  console.log(`updateSuccessful:: ${updateSuccessful}`);
   
   return updateSuccessful;
 }
@@ -83,7 +82,6 @@ const deleteItem = async (accountId, itemId) => {
   const histSuccessful = await deleteChangeHistory(accountId, itemId);
 
   const deleteSuccessful = (passSuccessful && histSuccessful);
-
   return deleteSuccessful;
 }
 

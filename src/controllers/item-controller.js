@@ -12,7 +12,7 @@ async function storePassword(req, res) {
 
     const passSuccess = await itemManagement.storePassword(accountId, itemId, password);
     const histSuccess = await itemManagement.updateChangeHistory(accountId, itemId, user);
-    const indexSuccess = await accountManagement.updateIndex(itemId);
+    const indexSuccess = await accountManagement.updateIndex(accountId, itemId);
 
     if (passSuccess && histSuccess && indexSuccess) {
       return res.status(200).send();

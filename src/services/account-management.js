@@ -34,6 +34,7 @@ async function deleteItems(accountId, itemIds) {
 
   for (let itemId of itemIds) {
     let itemSuccessful = await itemManagement.deleteItem(accountId, itemId);
+
     if (!itemSuccessful) {
       deleteSuccessful = false;
     }
@@ -92,18 +93,13 @@ const storeCode = async (accountId, code) => {
 
 const verifyCode = async (accountId, code) => {
   const key = getCodeKey(accountId);
-  console.log(`key: ${key}`);
-  console.log(`accountId: ${accountId}`);
-  console.log(`code: ${code}`);
 
   const codeHash = await secureStorage.get(key);
-  console.log(`codeHash: ${codeHash}`);
 
   // return early if account's password access code not yet set
   if (!codeHash) {return false;}
 
   verified = await bcrypt.compare(code, codeHash); 
-  console.log(`verified: ${verified}`);
 
   return verified;
 }
@@ -111,7 +107,7 @@ const verifyCode = async (accountId, code) => {
 // deletes all account values using account index, should do on app uninstall
 const deleteAccountValues = async (accountId) => {
   const index = await getIndex(accountId);
-
+  
   const itemsSuccessful = await deleteItems(accountId, index.itemIds);
   const codeSuccessful = await deleteCode(accountId);
   const indexSuccessful = await deleteIndex(accountId);

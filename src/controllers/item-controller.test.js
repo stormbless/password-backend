@@ -23,6 +23,7 @@ const { testUser } = testData;
 const { testItemId } = testData;
 const { testPassword } = testData;
 
+const setUpIndex = account1Data[0];
 const setUpPassword = account1Data[1];
 const setUpChangeHistory = account1Data[4];
 
@@ -83,6 +84,15 @@ function expectChangeHistoryUpdated(oldChangeHistory, newChangeHistory,
   expect(restOfChangeHistory).toEqual(oldChangeHistory);
 }
 
+function expectIndexUpdated(oldIndex, newIndex, newItemId) {
+  const expectedIndexValue = oldIndex;
+  if (!oldIndex.itemIds.includes(newItemId)) {
+    expectedIndexValue.itemIds.push(newItemId);
+  }
+  
+  expect(newIndex).toEqual(expectedIndexValue);
+}
+
 // stores test password using sessionUser, testItemId, testPassword and testUser.name
 // tests whether password and change history correctly update
 async function testStorePassword() {
@@ -100,6 +110,10 @@ async function testStorePassword() {
   };
   let changeHistoryBefore = await secureStorage.get(setUpChangeHistory.key);
   if (!changeHistoryBefore) { changeHistoryBefore = []; }
+
+  let indexBefore = await secureStorage.get(setUpIndex.key);
+  if (!indexBefore) {indexBefore = {itemIds: []}};
+
   const timeBefore = Date.now();
 
   await storePassword(req, res);
@@ -107,9 +121,12 @@ async function testStorePassword() {
   const timeAfter = Date.now();
   const passwordAfter = await secureStorage.get(setUpPassword.key);
   const changeHistoryAfter = await secureStorage.get(setUpChangeHistory.key);
+  const indexAfter = await secureStorage.get(setUpIndex.key);
+
   
   expect(passwordAfter).toBe(testPassword);
   expectChangeHistoryUpdated(changeHistoryBefore, changeHistoryAfter, testUser, timeBefore, timeAfter);
+  expectIndexUpdated(indexBefore, indexAfter, testItemId);
   expect(res.status).toHaveBeenCalledWith(200);
   expect(res.send).toHaveBeenCalled();
 }
